@@ -26,13 +26,27 @@ Required:
 * Playwright
 * ExcelJS
 
-Once cloned or copied locally:
-Command Prompt: npm install
+This project requires Node.js 18+.
+
+If `npm` or `npx` are not recognized:
+
+* Download Node.js LTS from https://nodejs.org
+* Install with "Add to PATH" enabled
+* Close and reopen your Command Prompt
+* Verify with:
+   node -v
+   npm -v
+   npx -v
+
+
+
+Once this file has been cloned or copied locally:
+Go to the directory of the journey creator in Command Prompt and type "init -y"
+
 
 This installs Playwright, ExcelJS, and supporting dependencies.
-
-If this is the first time running Playwright on your machine (or if browsers are missing):
-Command Prompt: npx playwright install
+Command Prompt: npm install playwright exceljs
+npx playwright install
 
 ---
 
