@@ -1,0 +1,7 @@
+{
+  "name": "Smoke Test",
+  "browser": { "headless": true },
+  "steps": [
+    { "name": "Visit example", "actions": [{"type":"visitPage","url":"https://example.com"}], "validations": {"adobe":[],"ga4":[],"cja":[]} }
+  ]
+}

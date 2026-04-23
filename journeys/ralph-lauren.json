@@ -1,0 +1,164 @@
+{
+  "name": "Ralph Lauren OBP Journey",
+  "browser": {
+    "headless": false,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "locale": "en-GB",
+    "viewport": { "width": 1366, "height": 768 }
+  },
+  "steps": [
+    {
+      "name": "Manual Human Confirmation",
+      "actions": [
+        { "type": "visitPage", "url": "https://storefront:rldev@development-tw.sfcc-ralphlauren-as.com/" },
+        { "type": "manualConfirm", "prompt": "Please complete the 'Press & Hold' verification manually" },
+        { "type": "wait", "ms": 2000 }
+      ],
+      "validations": { "adobe": [], "ga4": [], "cja": [] }
+    },
+    {
+      "name": "Enable Alloy Debug",
+      "actions": [
+        { "type": "runJavascript", "code": "try { if (window.alloy) { window.alloy('setDebug', { enabled: true }); } else if (window.adobe && window.adobe.alloy) { window.adobe.alloy('setDebug', { enabled: true }); } } catch (e) {}", "waitForNavigation": false },
+        { "type": "wait", "ms": 1000 }
+      ],
+      "validations": { "adobe": [], "ga4": [], "cja": [] }
+    },
+    {
+      "name": "Reload Home Page",
+      "actions": [
+        { "type": "reloadPage" },
+        { "type": "handleCookieBanner" },
+        { "type": "reloadPage" },
+        { "type": "randomDelay", "min": 500, "max": 1500 }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "v10", "type": "string", "expected": "en_gb:home" },
+          { "param": "v11", "type": "string", "expected": "en_gb" },
+          { "param": "v12", "type": "string", "expected": "home" },
+          { "param": "pageName", "type": "regex", "expected": "en_gb:home", "flags": "i" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Run JS Navigation & Click",
+      "actions": [
+        { "type": "handleCookieBanner" },
+        { "type": "randomDelay", "min": 500, "max": 1500 },
+        {
+          "type": "runJavascript",
+          "waitForNavigation": true,
+          "code": "const menLink = document.querySelector(\"#navigation ul.menu-category.level-1 li.nav-item a.desktop-only[data-cgid='men']\"); if (menLink) menLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); const subLink = document.querySelectorAll('a[data-cgid=\"men|clothing|men-clothing-poloshirts\"]')[0]; if (subLink) subLink.click();"
+        }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "v1", "type": "string", "expected": "guest" },
+          { "param": "events", "type": "regex", "expected": "event12" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Go to PLP",
+      "actions": [
+        { "type": "visitPage", "url": "https://development-tw.sfcc-ralphlauren-as.com/zh/men/clothing/polo-shirts" }
+      ],
+      "validations": { "adobe": [], "ga4": [], "cja": [] }
+    },
+    {
+      "name": "Add to Wishlist",
+      "actions": [
+        { "type": "click", "selector": "a.save-To-favorites" }
+      ],
+      "validations": { "adobe": [], "ga4": [], "cja": [] }
+    },
+    {
+      "name": "Click First Product",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "waitForNavigation": true,
+          "code": "document.querySelector(\"div.grid-tile[data-position='3'] div.product-image a.thumb-link\").click();"
+        }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "v10", "type": "string", "expected": "en_gb:pdp:theiconicmeshpoloshirt" },
+          { "param": "v12", "type": "string", "expected": "product" },
+          { "param": "events", "type": "regex", "expected": "prodView" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Select First Colour",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "waitForNavigation": false,
+          "code": "const el = document.querySelector('ul.swatches.colorname li.selectable:not(.out) a'); if (el) el.click();"
+        }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "events", "type": "regex", "expected": "event30" },
+          { "param": "pev2", "type": "string", "expected": "Colour Swatch Click" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Select Second Size",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "waitForNavigation": false,
+          "code": "const el = document.querySelector('ul.swatches.primarysize li.selectable:not(.out):nth-child(2) a'); if (el) { el.dispatchEvent(new Event('mousedown')); el.click(); }"
+        }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "events", "type": "regex", "expected": "event136" },
+          { "param": "pev2", "type": "string", "expected": "Size Selector" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Add to Cart",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "waitForNavigation": false,
+          "code": "const btn = document.querySelector('#add-to-cart'); if (btn) btn.click();"
+        }
+      ],
+      "validations": {
+        "adobe": [
+          { "param": "events", "type": "regex", "expected": "scAdd" }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Click Mini Cart Link Load Cart Page",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "waitForNavigation": true,
+          "code": "document.querySelector('a.mini-cart-link').click();"
+        }
+      ],
+      "validations": { "adobe": [], "ga4": [], "cja": [] }
+    }
+  ]
+}
