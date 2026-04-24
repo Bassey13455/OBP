@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>OBP Journey Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #0b1220;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #22d3ee;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --err: #ef4444;
+    --chip: #475569;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, sans-serif;
+    font-size: 14px;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 {
+    font-size: 16px;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+  header h1 span {
+    color: var(--accent);
+  }
+  header .spacer { flex: 1; }
+  button, .btn {
+    background: #334155;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 120ms, border-color 120ms;
+  }
+  button:hover, .btn:hover { background: #475569; }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0b1220;
+    font-weight: 600;
+  }
+  button.primary:hover { background: var(--accent-2); }
+  button.danger {
+    background: #7f1d1d;
+    border-color: #7f1d1d;
+  }
+  button.danger:hover { background: #991b1b; }
+  button.ghost {
+    background: transparent;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    height: calc(100vh - 57px);
+  }
+  .sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--panel-2);
+  }
+  .main {
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .journey-meta {
+    padding: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .journey-meta input[type="text"] {
+    width: 100%;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .step-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+  .step-item.active {
+    border-color: var(--accent);
+    background: #0c4a6e33;
+  }
+  .step-item .handle {
+    color: var(--muted);
+    font-weight: 700;
+    cursor: grab;
+  }
+  .step-item .name {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .step-item .meta {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .step-item .actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0.7;
+  }
+  .step-item .actions:hover { opacity: 1; }
+  .step-item .iconbtn {
+    padding: 2px 6px;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+  .step-item .iconbtn:hover { background: #334155; }
+  .step-item.dragging { opacity: 0.4; }
+  .step-item.drop-target { border-top: 2px solid var(--accent); }
+  .add-step {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+  }
+  .add-step select {
+    flex: 1;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .editor {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .editor h2 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    color: var(--accent);
+  }
+  .editor h3 {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 16px 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .field {
+    margin-bottom: 10px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .field input[type="text"],
+  .field input[type="number"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .field textarea {
+    font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 80px;
+  }
+  .action-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  .action-card .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .action-card .row:last-child { margin-bottom: 0; }
+  .action-card .type-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #0c4a6e;
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .action-card .spacer { flex: 1; }
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .tab {
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .rule-row {
+    display: grid;
+    grid-template-columns: 150px 130px 1fr 30px;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+  .rule-row input, .rule-row select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100%;
+  }
+  .empty {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+    padding: 30px;
+  }
+  .banner {
+    background: #0c4a6e;
+    border: 1px solid var(--accent);
+    color: #e0f2fe;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .banner code {
+    background: #0b1220;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .footer-bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+    background: var(--panel-2);
+    position: sticky;
+    bottom: 0;
+  }
+  details { margin-top: 12px; }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 6px 0;
+  }
+  pre.preview {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 11px;
+    max-height: 300px;
+    overflow: auto;
+    color: #cbd5e1;
+  }
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--ok);
+    color: #052e16;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.err { background: var(--err); color: #fff; }
+  input[type="checkbox"] {
+    accent-color: var(--accent);
+  }
+  .row-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kbd {
+    background: #0b1220;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>OBP <span>Journey Builder</span></h1>
+  <span class="row-inline">Customise &amp; export Playwright journey configs</span>
+  <div class="spacer"></div>
+  <button id="btn-load-default" class="ghost">Load default</button>
+  <button id="btn-import">Import JSON</button>
+  <input type="file" id="file-import" accept=".json" style="display:none" />
+  <button id="btn-export" title="Save into linked journeys folder if set, otherwise download">Save JSON</button>
+  <button id="btn-link-folder" class="ghost" title="Link your ./journeys/ folder so exports save directly into it">Link folder...</button>
+  <span id="folder-status" style="font-size:12px;color:#666;margin-left:4px;"></span>
+  <button id="btn-copy-json" class="primary">Copy JSON</button>
+  <button id="btn-save-local" class="ghost" title="Save to browser storage">Save preset</button>
+  <button id="btn-load-local" class="ghost">Load preset</button>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="journey-meta">
+      <div class="field">
+        <label>Journey name</label>
+        <input type="text" id="journey-name" placeholder="My Journey" />
+      </div>
+      <details>
+        <summary>Browser options</summary>
+        <div class="field">
+          <label>Start URL (optional &mdash; use for Manual Confirmation step)</label>
+          <input type="text" id="journey-start-url" placeholder="https://..." />
+        </div>
+        <div class="field">
+          <label>User Agent</label>
+          <input type="text" id="journey-ua" />
+        </div>
+        <div class="field">
+          <label>Locale</label>
+          <input type="text" id="journey-locale" />
+        </div>
+        <div class="field row-inline">
+          <label style="margin:0;">Viewport W &times; H</label>
+          <input type="number" id="journey-vw" style="width:80px;" />
+          <input type="number" id="journey-vh" style="width:80px;" />
+        </div>
+        <div class="field row-inline">
+          <input type="checkbox" id="journey-headless" />
+          <label style="margin:0;">Headless mode</label>
+        </div>
+      </details>
+    </div>
+
+    <div id="server-panel" style="display:none; border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:10px; background: var(--panel);">
+      <div class="row-inline" style="justify-content:space-between;">
+        <strong style="color: var(--text);">Server</strong>
+        <span id="server-status" style="font-size:12px; color:#7a7;">connecting...</span>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>Journeys in <code id="server-journeys-path" style="font-size:11px;">./journeys/</code></label>
+        <select id="server-journey-list" style="width:100%; background: var(--panel-2); color: var(--text); border:1px solid var(--border); padding: 6px; border-radius: 6px;"></select>
+      </div>
+      <label class="row-inline" style="gap:6px; font-size:12px; color: var(--text); margin: 4px 0 6px;">
+        <input type="checkbox" id="server-run-headed" checked />
+        Show browser window during run
+      </label>
+      <div class="row-inline" style="gap:6px; flex-wrap:wrap;">
+        <button id="btn-server-load" class="ghost">Load</button>
+        <button id="btn-server-save" class="ghost">Save</button>
+        <button id="btn-server-run" class="primary">Run</button>
+        <button id="btn-server-stop" class="ghost" style="display:none;">Stop</button>
+      </div>
+      <div id="server-run-output" style="display:none; margin-top:10px;">
+        <div class="row-inline" style="justify-content:space-between; margin-bottom:4px;">
+          <strong style="color: var(--text); font-size:12px;">Run log</strong>
+          <span id="server-run-id" style="font-size:11px; color:#888;"></span>
+        </div>
+        <pre id="server-run-log" style="max-height:220px; overflow:auto; background:#111; color:#ddd; font-size:11px; padding:8px; border-radius:6px; margin:0; font-family: ui-monospace, Menlo, Consolas, monospace; white-space:pre-wrap; word-break:break-word;"></pre>
+        <div id="server-run-files" style="margin-top:6px; font-size:12px;"></div>
+      </div>
+    </div>
+
+    <div class="row-inline" style="padding: 6px 2px;">
+      <strong style="color: var(--text);">Steps</strong>
+      <span id="step-count" class="meta"></span>
+    </div>
+    <div class="step-list" id="step-list"></div>
+
+    <div class="add-step">
+      <input type="text" id="new-step-name" placeholder="New step name" style="flex:1; background: var(--panel); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px;" />
+      <button id="btn-add-step" class="primary">+ Add</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="banner">
+      <strong>Quick start.</strong> Build your journey on the left, click <em>Download JSON</em>, and drop it into the
+      <code>journeys/</code> folder (e.g. <code>journeys/checkout.json</code>). Then run any of:
+      <br><br>
+      &bull; <code>node runner.js</code> &mdash; runs the default <code>./journey.json</code><br>
+      &bull; <code>node runner.js checkout</code> &mdash; runs <code>journeys/checkout.json</code><br>
+      &bull; <code>node runner.js --list</code> &mdash; list all journeys in <code>journeys/</code><br>
+      &bull; <code>node runner.js --all</code> &mdash; run every journey in <code>journeys/</code> sequentially<br>
+      &bull; <code>node runner.js --dry-run</code> &mdash; validate config without launching a browser
+      <br><br>
+      Outputs land in <code>hits/&lt;journey&gt;/&lt;timestamp&gt;/</code>. Partial files are written on step errors and
+      auto-deleted when the journey completes successfully.
+    </div>
+    <div id="editor-container"></div>
+
+    <details style="margin-top: 24px;">
+      <summary>Preview generated JSON</summary>
+      <pre class="preview" id="json-preview"></pre>
+    </details>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+ *  OBP Journey Builder
+ *  Single-file HTML UI that produces a JSON config consumed by
+ *  runner.js. The config mirrors the steps/actions in /actions
+ *  plus Adobe/GA4/CJA validation rules.
+ * ============================================================ */
+
+const ACTION_TYPES = {
+  visitPage:        { label: "Visit Page",         params: ["url"] },
+  reloadPage:       { label: "Reload Page",        params: [] },
+  click:            { label: "Click",              params: ["selector"] },
+  inputText:        { label: "Input Text",         params: ["selector", "text"] },
+  selectDropdown:   { label: "Select Dropdown",    params: ["selector", "value"] },
+  runJavascript:    { label: "Run JavaScript",     params: ["code", "waitForNavigation"] },
+  handleCookieBanner:{ label: "Handle Cookie Banner (OneTrust only)", params: [] },
+  consentBanner:    { label: "Consent Banner (accept/deny, multi-CMP)", params: ["choice", "url", "timeout", "customSelector"] },
+  randomDelay:      { label: "Random Delay (ms)",  params: ["min", "max"] },
+  wait:             { label: "Wait (ms)",          params: ["ms"] },
+  manualConfirm:    { label: "Manual Confirmation",params: ["prompt"] },
+};
+
+const DEFAULT_JOURNEY = {
+  name: "Ralph Lauren OBP Journey",
+  browser: {
+    headless: false,
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    locale: "en-GB",
+    viewport: { width: 1366, height: 768 },
+  },
+  steps: [
+    {
+      name: "Manual Human Confirmation",
+      actions: [
+        { type: "visitPage", url: "https://storefront:rldev@development-tw.sfcc-ralphlauren-as.com/" },
+        { type: "manualConfirm", prompt: "Please complete the 'Press & Hold' verification manually" },
+        { type: "wait", ms: 2000 },
+      ],
+      validations: { adobe: [], ga4: [], cja: [] },
+    },
+    {
+      name: "Enable Alloy Debug",
+      actions: [
+        { type: "runJavascript", code: "try { if (window.alloy) { window.alloy('setDebug', { enabled: true }); } else if (window.adobe && window.adobe.alloy) { window.adobe.alloy('setDebug', { enabled: true }); } } catch (e) {}", waitForNavigation: false },
+        { type: "wait", ms: 1000 },
+      ],
+      validations: { adobe: [], ga4: [], cja: [] },
+    },
+    {
+      name: "Reload Home Page",
+      actions: [
+        { type: "reloadPage" },
+        { type: "handleCookieBanner" },
+        { type: "reloadPage" },
+        { type: "randomDelay", min: 500, max: 1500 },
+      ],
+      validations: {
+        adobe: [
+          { param: "v10", type: "string", expected: "en_gb:home" },
+          { param: "v11", type: "string", expected: "en_gb" },
+          { param: "v12", type: "string", expected: "home" },
+          { param: "pageName", type: "regex", expected: "en_gb:home", flags: "i" },
+        ],
+        ga4: [],
+        cja: [],
+      },
+    },
+    {
+      name: "Click First Product",
+      actions: [
+        { type: "runJavascript", code: "document.querySelector(\"div.grid-tile[data-position='3'] div.product-image a.thumb-link\").click();", waitForNavigation: true },
+      ],
+      validations: {
+        adobe: [
+          { param: "v10", type: "string", expected: "en_gb:pdp:theiconicmeshpoloshirt" },
+          { param: "v12", type: "string", expected: "product" },
+          { param: "events", type: "regex", expected: "prodView" },
+        ],
+        ga4: [],
+        cja: [],
+      },
+    },
+    {
+      name: "Add to Cart",
+      actions: [
+        { type: "runJavascript", code: "const btn = document.querySelector('#add-to-cart'); if (btn) btn.click();", waitForNavigation: false },
+      ],
+      validations: {
+        adobe: [
+          { param: "events", type: "regex", expected: "scAdd" },
+        ],
+        ga4: [], cja: [],
+      },
+    },
+  ],
+};
+
+/* ---------- State ---------- */
+let journey = structuredClone(DEFAULT_JOURNEY);
+let activeStepIndex = 0;
+let activeRuleTab = "adobe";
+const STORAGE_KEY = "obp_journey_presets_v1";
+
+// Platforms — extending this array adds tabs to the Validation Rules panel.
+// Must mirror the PLATFORMS array in runner-sheets.js.
+const PLATFORM_KEYS = ["adobe","ga4","cja","meta","tiktok","snapchat","pinterest","googleads"];
+const PLATFORM_LABELS = { adobe:"Adobe", ga4:"GA4", cja:"CJA", meta:"Meta", tiktok:"TikTok", snapchat:"Snapchat", pinterest:"Pinterest", googleads:"Google Ads" };
+function emptyValidations() { return Object.fromEntries(PLATFORM_KEYS.map(k => [k, []])); }
+
+/* ---------- Helpers ---------- */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function toast(msg, isError = false) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.toggle("err", !!isError);
+  el.classList.add("show");
+  clearTimeout(window.__toast_t);
+  window.__toast_t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function safeName(name) {
+  return (name || "").replace(/[:\\/?*\[\]]/g, "").trim();
+}
+
+/* ---------- Render: sidebar ---------- */
+function renderSidebar() {
+  $("#journey-name").value = journey.name || "";
+  $("#journey-start-url").value = journey.browser?.startUrl || "";
+  $("#journey-ua").value = journey.browser?.userAgent || "";
+  $("#journey-locale").value = journey.browser?.locale || "";
+  $("#journey-vw").value = journey.browser?.viewport?.width || 1366;
+  $("#journey-vh").value = journey.browser?.viewport?.height || 768;
+  $("#journey-headless").checked = !!journey.browser?.headless;
+
+  const list = $("#step-list");
+  list.innerHTML = "";
+  journey.steps.forEach((step, i) => {
+    const div = document.createElement("div");
+    div.className = "step-item" + (i === activeStepIndex ? " active" : "");
+    div.draggable = true;
+    div.dataset.index = String(i);
+    div.innerHTML = `
+      <span class="handle" title="Drag to reorder">⋮⋮</span>
+      <div style="flex:1; min-width:0;">
+        <div class="name">${i + 1}. ${escapeHtml(step.name || "(unnamed)")}</div>
+        <div class="meta">${step.actions?.length || 0} action${(step.actions?.length || 0) === 1 ? "" : "s"} · ${totalRules(step)} rule${totalRules(step) === 1 ? "" : "s"}</div>
+      </div>
+      <div class="actions">
+        <button class="iconbtn" data-act="dup" title="Duplicate">⎘</button>
+        <button class="iconbtn" data-act="del" title="Delete">✕</button>
+      </div>`;
+    div.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      activeStepIndex = i;
+      renderAll();
+    });
+    div.querySelector('[data-act="dup"]').addEventListener("click", () => {
+      const copy = structuredClone(step);
+      copy.name = step.name + " (copy)";
+      journey.steps.splice(i + 1, 0, copy);
+      activeStepIndex = i + 1;
+      renderAll();
+    });
+    div.querySelector('[data-act="del"]').addEventListener("click", () => {
+      if (!confirm("Delete this step?")) return;
+      journey.steps.splice(i, 1);
+      if (activeStepIndex >= journey.steps.length) activeStepIndex = Math.max(0, journey.steps.length - 1);
+      renderAll();
+    });
+
+    // Drag reorder
+    div.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", String(i));
+      div.classList.add("dragging");
+    });
+    div.addEventListener("dragend", () => div.classList.remove("dragging"));
+    div.addEventListener("dragover", (e) => { e.preventDefault(); div.classList.add("drop-target"); });
+    div.addEventListener("dragleave", () => div.classList.remove("drop-target"));
+    div.addEventListener("drop", (e) => {
+      e.preventDefault();
+      div.classList.remove("drop-target");
+      const from = Number(e.dataTransfer.getData("text/plain"));
+      const to = i;
+      if (from === to) return;
+      const [moved] = journey.steps.splice(from, 1);
+      journey.steps.splice(to, 0, moved);
+      activeStepIndex = to;
+      renderAll();
+    });
+
+    list.appendChild(div);
+  });
+  $("#step-count").textContent = `(${journey.steps.length})`;
+}
+
+function totalRules(step) {
+  const v = step.validations || {};
+  return PLATFORM_KEYS.reduce((acc, k) => acc + (v[k]?.length || 0), 0);
+}
+
+/* ---------- Render: editor ---------- */
+function renderEditor() {
+  const host = $("#editor-container");
+  if (!journey.steps.length) {
+    host.innerHTML = `<div class="empty">No steps yet &mdash; add one from the sidebar.</div>`;
+    return;
+  }
+  const step = journey.steps[activeStepIndex];
+  host.innerHTML = `
+    <div class="editor">
+      <h2>Step ${activeStepIndex + 1}: <span id="step-name-display">${escapeHtml(step.name || "")}</span></h2>
+      <div class="field">
+        <label>Step name (used as Excel sheet name and validation key)</label>
+        <input type="text" id="step-name-input" value="${escapeHtml(step.name || "")}" />
+      </div>
+
+      <h3>Actions</h3>
+      <div id="action-list"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <select id="new-action-type" style="flex:1; background: var(--panel-2); color: var(--text); border:1px solid var(--border); padding: 6px; border-radius: 6px;">
+          ${Object.entries(ACTION_TYPES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("")}
+        </select>
+        <button id="btn-add-action">+ Add Action</button>
+      </div>
+
+      <h3>Validation Rules</h3>
+      <div class="tabs">
+        ${PLATFORM_KEYS.map(p => `<div class="tab ${activeRuleTab === p ? "active" : ""}" data-plat="${p}">${PLATFORM_LABELS[p]} (${step.validations?.[p]?.length || 0})</div>`).join("")}
+      </div>
+      <div id="rules-host"></div>
+      <button id="btn-add-rule" style="margin-top:8px;">+ Add Rule</button>
+    </div>
+  `;
+
+  $("#step-name-input").addEventListener("input", (e) => {
+    const sanitised = safeName(e.target.value);
+    if (sanitised !== e.target.value) {
+      e.target.value = sanitised;
+      toast("Removed characters Excel doesn't allow: \\ / ? * [ ] :", true);
+    }
+    step.name = sanitised;
+    $("#step-name-display").textContent = sanitised;
+    renderSidebar();
+    renderPreview();
+  });
+
+  renderActions();
+  renderRules();
+
+  $$(".tab[data-plat]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      activeRuleTab = tab.dataset.plat;
+      renderEditor();
+    });
+  });
+
+  $("#btn-add-action").addEventListener("click", () => {
+    const type = $("#new-action-type").value;
+    const newAction = { type };
+    const defaults = {
+      visitPage: { url: "" },
+      click: { selector: "" },
+      inputText: { selector: "", text: "" },
+      selectDropdown: { selector: "", value: "" },
+      runJavascript: { code: "", waitForNavigation: false },
+      randomDelay: { min: 500, max: 1500 },
+      wait: { ms: 1000 },
+      manualConfirm: { prompt: "Manual confirmation required. Press ENTER in the terminal to continue." },
+      consentBanner: { choice: "acceptAll", url: "", timeout: 10000, customSelector: "" },
+    };
+    Object.assign(newAction, defaults[type] || {});
+    step.actions = step.actions || [];
+    step.actions.push(newAction);
+    renderAll();
+  });
+
+  $("#btn-add-rule").addEventListener("click", () => {
+    step.validations = step.validations || emptyValidations();
+    step.validations[activeRuleTab] = step.validations[activeRuleTab] || [];
+    step.validations[activeRuleTab].push({ param: "", type: "string", expected: "" });
+    renderAll();
+  });
+}
+
+function renderActions() {
+  const step = journey.steps[activeStepIndex];
+  const host = $("#action-list");
+  if (!step.actions || !step.actions.length) {
+    host.innerHTML = `<div class="empty">No actions &mdash; add one below.</div>`;
+    return;
+  }
+  host.innerHTML = "";
+  step.actions.forEach((act, i) => {
+    const spec = ACTION_TYPES[act.type] || { label: act.type, params: [] };
+    const card = document.createElement("div");
+    card.className = "action-card";
+    card.innerHTML = `
+      <div class="row">
+        <span class="type-chip">${spec.label}</span>
+        <span class="meta" style="color: var(--muted); font-size:11px;">#${i + 1}</span>
+        <div class="spacer"></div>
+        <button class="ghost" data-up title="Move up">▲</button>
+        <button class="ghost" data-down title="Move down">▼</button>
+        <button class="danger" data-del title="Delete">✕</button>
+      </div>
+      ${renderActionFields(act, i)}
+    `;
+    // Params events
+    card.querySelectorAll("[data-param]").forEach(input => {
+      input.addEventListener("input", (e) => {
+        const key = input.dataset.param;
+        let val = e.target.value;
+        if (input.type === "number") val = Number(val);
+        if (input.type === "checkbox") val = e.target.checked;
+        act[key] = val;
+        renderPreview();
+        // Don't rerender - keep cursor position
+      });
+    });
+    card.querySelector("[data-up]").addEventListener("click", () => {
+      if (i === 0) return;
+      [step.actions[i-1], step.actions[i]] = [step.actions[i], step.actions[i-1]];
+      renderAll();
+    });
+    card.querySelector("[data-down]").addEventListener("click", () => {
+      if (i === step.actions.length - 1) return;
+      [step.actions[i+1], step.actions[i]] = [step.actions[i], step.actions[i+1]];
+      renderAll();
+    });
+    card.querySelector("[data-del]").addEventListener("click", () => {
+      step.actions.splice(i, 1);
+      renderAll();
+    });
+    host.appendChild(card);
+  });
+}
+
+function renderActionFields(act, idx) {
+  switch (act.type) {
+    case "visitPage":
+      return `<div class="field"><label>URL</label><input type="text" data-param="url" value="${escapeAttr(act.url || "")}" placeholder="https://example.com" /></div>`;
+    case "reloadPage":
+    case "handleCookieBanner":
+      return `<div class="meta" style="color: var(--muted); font-size:11px;">No parameters.</div>`;
+    case "click":
+      return `<div class="field"><label>CSS Selector</label><input type="text" data-param="selector" value="${escapeAttr(act.selector || "")}" placeholder="#add-to-cart" /></div>`;
+    case "inputText":
+      return `
+        <div class="field"><label>Selector</label><input type="text" data-param="selector" value="${escapeAttr(act.selector || "")}" placeholder="#email" /></div>
+        <div class="field"><label>Text</label><input type="text" data-param="text" value="${escapeAttr(act.text || "")}" /></div>`;
+    case "selectDropdown":
+      return `
+        <div class="field"><label>Selector</label><input type="text" data-param="selector" value="${escapeAttr(act.selector || "")}" /></div>
+        <div class="field"><label>Value</label><input type="text" data-param="value" value="${escapeAttr(act.value || "")}" /></div>`;
+    case "runJavascript":
+      return `
+        <div class="field"><label>JavaScript (runs in page context)</label><textarea data-param="code" rows="4" placeholder="document.querySelector('#btn').click();">${escapeHtml(act.code || "")}</textarea></div>
+        <div class="row-inline"><input type="checkbox" data-param="waitForNavigation" ${act.waitForNavigation ? "checked" : ""}/> <label style="margin:0;">Wait for navigation after script runs</label></div>`;
+    case "randomDelay":
+      return `
+        <div class="row-inline">
+          <label>Min</label><input type="number" data-param="min" value="${act.min ?? 500}" style="width:100px; background: var(--panel-2); color: var(--text); border:1px solid var(--border); padding: 4px 8px; border-radius: 4px;" />
+          <label>Max</label><input type="number" data-param="max" value="${act.max ?? 1500}" style="width:100px; background: var(--panel-2); color: var(--text); border:1px solid var(--border); padding: 4px 8px; border-radius: 4px;" />
+        </div>`;
+    case "wait":
+      return `<div class="field"><label>Milliseconds</label><input type="number" data-param="ms" value="${act.ms ?? 1000}" /></div>`;
+    case "manualConfirm":
+      return `<div class="field"><label>Prompt to show in terminal</label><input type="text" data-param="prompt" value="${escapeAttr(act.prompt || "")}" /></div>`;
+    case "consentBanner":
+      return `
+        <div class="field">
+          <label>Choice</label>
+          <select data-param="choice">
+            <option value="acceptAll" ${act.choice !== "deny" ? "selected" : ""}>Accept All</option>
+            <option value="deny" ${act.choice === "deny" ? "selected" : ""}>Deny / Reject All</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>URL to visit first (optional &mdash; leave blank to just handle the banner on the current page)</label>
+          <input type="text" data-param="url" value="${escapeAttr(act.url || "")}" placeholder="https://..." />
+        </div>
+        <div class="field">
+          <label>Timeout waiting for banner (ms)</label>
+          <input type="number" data-param="timeout" value="${act.timeout ?? 10000}" />
+        </div>
+        <div class="field">
+          <label>Custom selector (optional &mdash; overrides built-in CMP list)</label>
+          <input type="text" data-param="customSelector" value="${escapeAttr(act.customSelector || "")}" placeholder="#my-custom-accept-btn" />
+        </div>
+        <div class="row-inline" style="color: var(--muted); font-size: 11px;">
+          Built-in CMPs: OneTrust, Cookiebot, TrustArc, Quantcast / Sourcepoint, Didomi, Usercentrics, Axeptio, Osano, CookieYes, Klaro &mdash; plus generic heuristics.
+        </div>`;
+    default:
+      return `<div class="meta">Unknown action type: ${escapeHtml(act.type)}</div>`;
+  }
+}
+
+function renderRules() {
+  const step = journey.steps[activeStepIndex];
+  const host = $("#rules-host");
+  step.validations = step.validations || { adobe: [], ga4: [], cja: [] };
+  const list = step.validations[activeRuleTab] || [];
+  if (!list.length) {
+    host.innerHTML = `<div class="empty">No ${activeRuleTab.toUpperCase()} rules.</div>`;
+    return;
+  }
+  host.innerHTML = list.map((rule, i) => `
+    <div class="rule-row" data-i="${i}">
+      <input type="text" data-field="param" value="${escapeAttr(rule.param || "")}" placeholder="e.g. v10, events" />
+      <select data-field="type">
+        <option value="string" ${rule.type === "string" ? "selected" : ""}>contains</option>
+        <option value="regex" ${rule.type === "regex" ? "selected" : ""}>regex</option>
+        <option value="regexAll" ${rule.type === "regexAll" ? "selected" : ""}>all regex (array)</option>
+      </select>
+      <input type="text" data-field="expected" value="${escapeAttr(Array.isArray(rule.expected) ? rule.expected.join("|") : (rule.expected || ""))}" placeholder="${rule.type === "regexAll" ? "pattern1|pattern2|..." : rule.type === "regex" ? "regex pattern" : "expected value"}" />
+      <button class="danger" data-del-rule>✕</button>
+    </div>
+  `).join("");
+
+  host.querySelectorAll(".rule-row").forEach(row => {
+    const i = Number(row.dataset.i);
+    row.querySelectorAll("[data-field]").forEach(input => {
+      input.addEventListener("input", () => {
+        const r = list[i];
+        const field = input.dataset.field;
+        let val = input.value;
+        if (field === "expected" && r.type === "regexAll") {
+          r.expected = val.split("|").map(s => s.trim()).filter(Boolean);
+        } else {
+          r[field] = val;
+        }
+        if (field === "type") {
+          // switch fresh expected shape
+          if (val === "regexAll" && typeof r.expected === "string") {
+            r.expected = r.expected.split("|").filter(Boolean);
+          } else if (val !== "regexAll" && Array.isArray(r.expected)) {
+            r.expected = r.expected.join("|");
+          }
+          renderRules();
+        }
+        renderPreview();
+        renderSidebar();
+      });
+    });
+    row.querySelector("[data-del-rule]").addEventListener("click", () => {
+      list.splice(i, 1);
+      renderAll();
+    });
+  });
+}
+
+/* ---------- Utilities ---------- */
+function escapeHtml(str) {
+  return String(str || "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[s]);
+}
+function escapeAttr(str) {
+  return escapeHtml(str);
+}
+
+function renderPreview() {
+  $("#json-preview").textContent = JSON.stringify(journey, null, 2);
+}
+
+function renderAll() {
+  renderSidebar();
+  renderEditor();
+  renderPreview();
+}
+
+/* ---------- Journey-level wiring ---------- */
+$("#journey-name").addEventListener("input", e => { journey.name = e.target.value; renderPreview(); });
+$("#journey-start-url").addEventListener("input", e => { journey.browser = journey.browser || {}; journey.browser.startUrl = e.target.value; renderPreview(); });
+$("#journey-ua").addEventListener("input", e => { journey.browser = journey.browser || {}; journey.browser.userAgent = e.target.value; renderPreview(); });
+$("#journey-locale").addEventListener("input", e => { journey.browser = journey.browser || {}; journey.browser.locale = e.target.value; renderPreview(); });
+$("#journey-vw").addEventListener("input", e => {
+  journey.browser = journey.browser || {};
+  journey.browser.viewport = journey.browser.viewport || {};
+  journey.browser.viewport.width = Number(e.target.value);
+  renderPreview();
+});
+$("#journey-vh").addEventListener("input", e => {
+  journey.browser = journey.browser || {};
+  journey.browser.viewport = journey.browser.viewport || {};
+  journey.browser.viewport.height = Number(e.target.value);
+  renderPreview();
+});
+$("#journey-headless").addEventListener("change", e => {
+  journey.browser = journey.browser || {};
+  journey.browser.headless = !!e.target.checked;
+  renderPreview();
+});
+
+$("#btn-add-step").addEventListener("click", () => {
+  const name = safeName($("#new-step-name").value) || `Step ${journey.steps.length + 1}`;
+  journey.steps.push({
+    name,
+    actions: [],
+    validations: emptyValidations(),
+  });
+  activeStepIndex = journey.steps.length - 1;
+  $("#new-step-name").value = "";
+  renderAll();
+});
+$("#new-step-name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("#btn-add-step").click();
+});
+
+/* ---------- Header buttons ---------- */
+$("#btn-load-default").addEventListener("click", () => {
+  if (!confirm("Replace current journey with the default starter journey?")) return;
+  journey = structuredClone(DEFAULT_JOURNEY);
+  activeStepIndex = 0;
+  renderAll();
+  toast("Loaded default journey");
+});
+
+/* ---------- Linked journeys folder (File System Access API) ---------- */
+const FS_DB = "obp-builder";
+const FS_STORE = "handles";
+const FS_KEY = "journeysDir";
+
+function fsSupported() {
+  return typeof window.showDirectoryPicker === "function";
+}
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(FS_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(FS_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbGet(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FS_STORE, "readonly");
+    const req = tx.objectStore(FS_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbSet(key, value) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FS_STORE, "readwrite");
+    tx.objectStore(FS_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbDel(key) {
+  const db = await idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(FS_STORE, "readwrite");
+    tx.objectStore(FS_STORE).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function ensureDirPermission(handle, mode = "readwrite") {
+  if (!handle) return false;
+  if ((await handle.queryPermission({ mode })) === "granted") return true;
+  return (await handle.requestPermission({ mode })) === "granted";
+}
+async function pickJourneysFolder() {
+  if (!fsSupported()) {
+    toast("Your browser doesn't support folder linking — use Chrome/Edge or rely on downloads", true);
+    return null;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ id: "obp-journeys", mode: "readwrite" });
+    await idbSet(FS_KEY, handle);
+    return handle;
+  } catch (err) {
+    if (err && err.name === "AbortError") return null;
+    toast("Couldn't link folder: " + err.message, true);
+    return null;
+  }
+}
+async function getLinkedFolder(promptIfMissing = false) {
+  if (!fsSupported()) return null;
+  let handle = await idbGet(FS_KEY);
+  if (!handle && promptIfMissing) handle = await pickJourneysFolder();
+  if (!handle) return null;
+  const ok = await ensureDirPermission(handle, "readwrite");
+  if (!ok) {
+    toast("Permission to write to the linked folder was denied", true);
+    return null;
+  }
+  return handle;
+}
+async function refreshFolderStatus() {
+  const el = $("#folder-status");
+  if (!el) return;
+  if (!fsSupported()) {
+    el.textContent = "(folder linking not supported in this browser)";
+    return;
+  }
+  const handle = await idbGet(FS_KEY);
+  el.textContent = handle ? `Linked: ${handle.name}/` : "(not linked — exports will download)";
+}
+
+function slugifyName(name) {
+  return String(name || "journey")
+    .trim()
+    .replace(/[^a-z0-9_-]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase() || "journey";
+}
+
+async function writeJourneyToLinkedFolder(dirHandle, filename, contents) {
+  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(contents);
+  await writable.close();
+}
+
+function downloadJourneyFallback(filename, contents) {
+  const blob = new Blob([contents], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+$("#btn-link-folder").addEventListener("click", async () => {
+  if (!fsSupported()) {
+    toast("Folder linking needs Chrome, Edge, or another Chromium browser.", true);
+    return;
+  }
+  const existing = await idbGet(FS_KEY);
+  if (existing) {
+    const change = confirm(`Currently linked to "${existing.name}/". Pick a different folder?\n\n(Click Cancel to unlink instead.)`);
+    if (change) {
+      await pickJourneysFolder();
+    } else {
+      await idbDel(FS_KEY);
+      toast("Unlinked journeys folder");
+    }
+  } else {
+    await pickJourneysFolder();
+  }
+  await refreshFolderStatus();
+});
+
+$("#btn-export").addEventListener("click", async () => {
+  const contents = JSON.stringify(journey, null, 2);
+  const filename = slugifyName(journey.name) + ".json";
+
+  if (fsSupported()) {
+    let handle = await getLinkedFolder(false);
+    if (!handle) handle = await getLinkedFolder(true); // prompt on first use
+    if (handle) {
+      try {
+        await writeJourneyToLinkedFolder(handle, filename, contents);
+        toast(`Saved ${filename} to ${handle.name}/`);
+        await refreshFolderStatus();
+        return;
+      } catch (err) {
+        toast("Couldn't write to folder, falling back to download: " + err.message, true);
+      }
+    }
+  }
+  downloadJourneyFallback(filename, contents);
+  toast(`Downloaded ${filename}`);
+});
+
+// Reflect linked folder state in the header on load
+refreshFolderStatus();
+
+$("#btn-copy-json").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(journey, null, 2));
+    toast("Copied JSON to clipboard");
+  } catch {
+    toast("Clipboard blocked — use Download instead", true);
+  }
+});
+
+$("#btn-import").addEventListener("click", () => $("#file-import").click());
+$("#file-import").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.steps || !Array.isArray(parsed.steps)) throw new Error("Missing steps[]");
+      journey = parsed;
+      activeStepIndex = 0;
+      renderAll();
+      toast(`Imported ${parsed.steps.length} steps`);
+    } catch (err) {
+      toast("Invalid JSON: " + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+$("#btn-save-local").addEventListener("click", () => {
+  const name = prompt("Name this preset:", journey.name || "Untitled");
+  if (!name) return;
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  all[name] = journey;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  toast(`Saved preset "${name}"`);
+});
+$("#btn-load-local").addEventListener("click", () => {
+  const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const keys = Object.keys(all);
+  if (!keys.length) { toast("No saved presets", true); return; }
+  const name = prompt(`Presets:\n\n${keys.map((k, i) => `${i + 1}. ${k}`).join("\n")}\n\nType preset name exactly:`);
+  if (!name || !all[name]) { toast("Not found", true); return; }
+  journey = all[name];
+  activeStepIndex = 0;
+  renderAll();
+  toast(`Loaded "${name}"`);
+});
+
+/* ---------- Expose hooks for builder-server.js ---------- */
+window.toast = toast;
+window.getJourney = () => journey;
+window.setJourney = (j) => { journey = j; activeStepIndex = 0; renderAll(); };
+window.renderAll = renderAll;
+
+/* ---------- Init ---------- */
+renderAll();
+</script>
+<script src="builder-server.js" defer></script>
+</body>
+</html>

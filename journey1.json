@@ -1,0 +1,153 @@
+{
+  "name": "Ralph Lauren OBP Journey",
+  "browser": {
+    "headless": false,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "locale": "en-GB",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    }
+  },
+  "steps": [
+    {
+      "name": "Manual Human Confirmation",
+      "actions": [
+        {
+          "type": "visitPage",
+          "url": "https://storefront:rldev@development-tw.sfcc-ralphlauren-as.com/"
+        },
+        {
+          "type": "manualConfirm",
+          "prompt": "Please complete the 'Press & Hold' verification manually"
+        },
+        {
+          "type": "wait",
+          "ms": 2000
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Enable Alloy Debug",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "code": "try { if (window.alloy) { window.alloy('setDebug', { enabled: true }); } else if (window.adobe && window.adobe.alloy) { window.adobe.alloy('setDebug', { enabled: true }); } } catch (e) {}",
+          "waitForNavigation": false
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Reload Home Page",
+      "actions": [
+        {
+          "type": "reloadPage"
+        },
+        {
+          "type": "handleCookieBanner"
+        },
+        {
+          "type": "reloadPage"
+        },
+        {
+          "type": "randomDelay",
+          "min": 500,
+          "max": 1500
+        }
+      ],
+      "validations": {
+        "adobe": [
+          {
+            "param": "v10",
+            "type": "string",
+            "expected": "en_gb:home"
+          },
+          {
+            "param": "v11",
+            "type": "string",
+            "expected": "en_gb"
+          },
+          {
+            "param": "v12",
+            "type": "string",
+            "expected": "home"
+          },
+          {
+            "param": "pageName",
+            "type": "regex",
+            "expected": "en_gb:home",
+            "flags": "i"
+          }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Click First Product",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "code": "document.querySelector(\"div.grid-tile[data-position='3'] div.product-image a.thumb-link\").click();",
+          "waitForNavigation": true
+        }
+      ],
+      "validations": {
+        "adobe": [
+          {
+            "param": "v10",
+            "type": "string",
+            "expected": "en_gb:pdp:theiconicmeshpoloshirt"
+          },
+          {
+            "param": "v12",
+            "type": "string",
+            "expected": "product"
+          },
+          {
+            "param": "events",
+            "type": "regex",
+            "expected": "prodView"
+          }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "Add to Cart",
+      "actions": [
+        {
+          "type": "runJavascript",
+          "code": "const btn = document.querySelector('#add-to-cart'); if (btn) btn.click();",
+          "waitForNavigation": false
+        }
+      ],
+      "validations": {
+        "adobe": [
+          {
+            "param": "events",
+            "type": "regex",
+            "expected": "scAdd"
+          }
+        ],
+        "ga4": [],
+        "cja": []
+      }
+    }
+  ]
+}

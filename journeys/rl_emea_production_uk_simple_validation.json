@@ -1,0 +1,189 @@
+{
+  "name": "RL EMEA / Production / UK / Simple Validation",
+  "browser": {
+    "headless": false,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "locale": "en-GB",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    }
+  },
+  "steps": [
+    {
+      "name": "CMP Accept All",
+      "actions": [
+        {
+          "type": "consentBanner",
+          "choice": "acceptAll",
+          "url": "http://www.ralphlauren.co.uk ",
+          "timeout": 10000,
+          "customSelector": ""
+        }
+      ],
+      "validations": {
+        "adobe": [
+          {
+            "param": "pageName",
+            "type": "string",
+            "expected": ""
+          },
+          {
+            "param": "server",
+            "type": "regex",
+            "expected": "http(s)?\\:\\/\\/www\\.ralphlauren\\..+"
+          },
+          {
+            "param": "v10",
+            "type": "string",
+            "expected": "en_gb:home"
+          },
+          {
+            "param": "v11",
+            "type": "string",
+            "expected": "en_gb"
+          },
+          {
+            "param": "v12",
+            "type": "string",
+            "expected": "home"
+          },
+          {
+            "param": "v199",
+            "type": "regex",
+            "expected": ".*"
+          },
+          {
+            "param": "v220",
+            "type": "regex",
+            "expected": "https\\:\\/\\/www\\.ralphlauren\\..+"
+          }
+        ],
+        "ga4": [],
+        "cja": [
+          {
+            "param": "events.0.xdm.eventType",
+            "type": "string",
+            "expected": "web.webinteraction.pageViews"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails._polo.locale",
+            "type": "string",
+            "expected": "en_GB"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails._polo.pageType",
+            "type": "string",
+            "expected": "home"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails.name",
+            "type": "string",
+            "expected": "en_GB:home"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails.pageViews.id",
+            "type": "string",
+            "expected": "en_GB:home"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails.pageViews.value",
+            "type": "string",
+            "expected": "1"
+          },
+          {
+            "param": "events.0.xdm.web.webPageDetails.server",
+            "type": "regex",
+            "expected": "www\\.ralphlauren\\..+"
+          },
+          {
+            "param": "query.identity.fetch.0",
+            "type": "string",
+            "expected": "ECID"
+          },
+          {
+            "param": "events.0.xdm.timestamp",
+            "type": "regex",
+            "expected": ".*"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Go to Home Page",
+      "actions": [
+        {
+          "type": "visitPage",
+          "url": "http://www.ralphlauren.co.uk "
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": [],
+        "meta": [],
+        "tiktok": [],
+        "snapchat": [],
+        "pinterest": [],
+        "googleads": []
+      }
+    },
+    {
+      "name": "Go to 401480 PDP",
+      "actions": [
+        {
+          "type": "visitPage",
+          "url": "https://www.ralphlauren.co.uk/en/the-iconic-mesh-polo-shirt-401480.html"
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": [],
+        "meta": [],
+        "tiktok": [],
+        "snapchat": [],
+        "pinterest": [],
+        "googleads": []
+      }
+    },
+    {
+      "name": "Go to Black M 401480",
+      "actions": [
+        {
+          "type": "visitPage",
+          "url": "https://www.ralphlauren.co.uk/en/the-iconic-mesh-polo-shirt-3615738826395.html "
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": [],
+        "meta": [],
+        "tiktok": [],
+        "snapchat": [],
+        "pinterest": [],
+        "googleads": []
+      }
+    },
+    {
+      "name": "Add To Bag",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "#add-to-cart"
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": [],
+        "meta": [],
+        "tiktok": [],
+        "snapchat": [],
+        "pinterest": [],
+        "googleads": []
+      }
+    }
+  ]
+}

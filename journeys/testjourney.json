@@ -1,0 +1,86 @@
+{
+  "name": "Cottages OBP Journey",
+  "browser": {
+    "headless": false,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "locale": "en-GB",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    }
+  },
+  "steps": [
+    {
+      "name": "AcceptCookiesAndReloadPage",
+      "actions": [
+        {
+          "type": "consentBanner",
+          "choice": "acceptAll",
+          "url": "https://www.cottages.com/",
+          "timeout": 10000,
+          "customSelector": ""
+        },
+        {
+          "type": "reloadPage"
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [],
+        "cja": []
+      }
+    },
+    {
+      "name": "ClickSearchButton",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "button[data-testid=\"search-button\"]"
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [
+          {
+            "param": "en",
+            "type": "string",
+            "expected": "view_item_list"
+          }
+        ],
+        "cja": []
+      }
+    },
+    {
+      "name": "ClickFirstProperty",
+      "actions": [
+        {
+          "type": "click",
+          "selector": "#content-container ul[aria-label=properties] li a[type=button]"
+        },
+        {
+          "type": "wait",
+          "ms": 1000
+        }
+      ],
+      "validations": {
+        "adobe": [],
+        "ga4": [
+          {
+            "param": "en",
+            "type": "string",
+            "expected": "view_item"
+          }
+        ],
+        "cja": []
+      }
+    }
+  ]
+}
